@@ -2,6 +2,7 @@
 
 **2nd Photonics Days Makathon:** *Digital concept for university internships in physics and optics*
 
+Cool that you made it that far! Happy to have you on board! :-) 
 
 ## 📅 General Schedule
 
@@ -60,20 +61,20 @@ Presence events at many universities are currently "corona-conditioned", althoug
 
 
 
-
-👩🏼⚒🦠🧬📃
-
 ## Challenge
 
 With UC2 we want to provide the missing access to both optical experiments and microscopes from remote. In doing so, we are aiming for the "lab-in-the-cloud", where components such as cameras, stages or lamps can be operated by external devices (e.g. laptops). A minicomputer (Raspberry Pi) enables digital image acquisition, additional components such as the Arduino microcontroller or ESP32 ensure the control of motors for focusing and lighting. 
 
 The challenge is to create a web interface in the sense of "IoT" (Internet-of-things), where students can log in and program, control and monitor the devices from home. Common protocols such as MQTT and Web-RTC for controlling and reading the images are to be tested. The finished microscope will be located at the Leibniz IPHT during the "Challenge" and can be remotely programmed via SSH.
 
-**How it could look like:**
+**🔬 How it could look like:**
 
 <p align="center">
 <img src="./IMAGES/FIG1.png" width="700">
 </p>
+
+*Fig. 1: The graph shows the general structure of the MQTT-based communication architecture of the UC2 blocks. Components such as LED-Matrix and Z-stage are connected to ESP32 microcontrollers which connect to the MQTT broker (Mosquitto) running on a Raspberry Pi through a WiFi router*
+
 
 ℹ️  More information for the incubator microscope can be found [**here**](https://github.com/bionanoimaging/UC2-GIT/tree/master/APPLICATIONS/APP_Incubator_Microscope). Information 
 
@@ -88,7 +89,7 @@ The goal is to create a website that displays the video stream from a Raspberry 
 
 The task mentioned above sounds like a lot of work. Where to start? In the following we try to break down the final goal to access the small microscope to external users through a website into little pieces.
 
-### ℹ️ Some information in advance
+### ℹ️ Some general information in advance
 
 ***📤 Datalimit:*** The microscope is connected to a portable Wifi hotspot which has a datalimit of **10GB** for the **10h** makathon!
 
@@ -99,29 +100,51 @@ The task mentioned above sounds like a lot of work. Where to start? In the follo
 - SSH: Access the Raspberry Pi remotely through [WinSCP](https://winscp.net/eng/docs/lang:de) + [Putty](https://www.putty.org/)
 - ImJoy: Create a plugin which connects Python, Javascript and streaming applications using [ImJoy](https://imjoy.io/) for tutorials look [here](https://imjoy.readthedocs.io/en/latest/tutorials/)
 - Chrome: Debugging HTML/Javascript becomes handy with chromes on-board debugging tools 
+- MQTT.fx: An open-source MQTT client to send and receive MQTT commands [https://mqttfx.jensd.de/](https://mqttfx.jensd.de/)
+
+***📷 LiveStream of the setup:***
+
+We have created a Zoom webstream of the setup. The Link is  accessible through the ***Discord*** channel
+
+***🔐 User credentials:***
+ 
+```
+*Raspberry Pi*
+user: pi
+password: raspberry
+
+*VPN*
+user: XXX
+password: XXX
+```
+
+***Helpful Links***
+
+- MQTT: The different devices communicate through the internet-of-things based communication protocol [MQTT](https://en.wikipedia.org/wiki/MQTT)
+-  A nice tutorial summarizing the working principle for the ESP32 and Raspberry Pi can be found [here](https://www.instructables.com/id/How-to-Use-MQTT-With-the-Raspberry-Pi-and-ESP8266/)
+- Stream video (at lowest quality possible), more information [here](https://appuals.com/how-to-perform-video-streaming-using-raspberry-pi/)
+- MJPEG and HTTPS vs h264 with webRTCTest, more information [here](https://medium.com/home-wireless/headless-streaming-video-with-the-raspberry-pi-zero-w-and-raspberry-pi-camera-38bef1968e1)
+- SSH-Cheatsheet .. [for example](https://www.thomas-krenn.com/de/tkmag/wp-content/uploads/2017/05/ssh-cheat-sheet-v1.0.pdf)
 
 
-
-# 
-VPN + SSH + HTTPS
-Setup VPN-connection (openvpn client) + login via SSH
-Read & understand python script/call structure with MQTT via <GITLINK>
-Move motor, turn on/off light and take an image
-Stream video (at lowest quality possible)
-https://appuals.com/how-to-perform-video-streaming-using-raspberry-pi/
-MJPEG and HTTPS vs h264 with webRTCTest https://medium.com/home-wireless/headless-streaming-video-with-the-raspberry-pi-zero-w-and-raspberry-pi-camera-38bef1968e1
-Create a homepage and run on RASPI -> VUE.js which calls a node.js interface and redirects commands
-Implement camera-stream into homepage and buttons to interact with remote device
-webRTC + STUN
-read into imjoy.io
-Setup webRTC on RasPi
-Install an imjoy.io instance on your PC (within browser) and write an interface to connect to Raspi
-Best 
-René
-
-- Challenges (milestones)
 
 ## Steps
+
+The final goal is to exploit the microscope to a web-based GUI (ImJoy), where basic functionalities such as light on/off, motor up/down, video stream start/stop can be controlled. The next steps should help you to reach this goal! 
+
+### What is ImJoy?
+
+[ImJoy.io](https://imjoy.io) is an open-source web-based image processing tools with a very nice GUI. It is plugin-based an can easily bridge Javascript, Python and HTML. 
+
+<img src="https://github.com/imjoy-team/ImJoy/raw/master/docs/assets/imjoy-overview.jpg" width="650">
+</p>
+
+Take a moment and exploit the plugins [here](https://imjoy.io/repo/) and select the "Image Recognition" plugin (scroll down) and hit the little cloud to "install" it. IT will be added to your ImJoy instance running in your browser. Click on the image recognition plugin in the taskbar on the left. It loads a tensorflow.js neural network model to classify an image. Hit predict and it will tell you, that it's a cat! Surprise..
+
+You can directly access the plugin through this [link](https://imjoy.io/lite?plugin=imjoy-team/imjoy-plugins:Image%20Recognition) and install it through this [link](https://imjoy.io/#/app?plugin=imjoy-team%2Fimjoy-plugins%3AImage%20Recognition) 
+
+The goal is: Embedd a simple GUI in a ImJoy plugin. The next few steps will guide you there..
+
 
 ### 0. Connect to the Raspi 
 
@@ -130,23 +153,81 @@ The global IP address is XX.XX.XX.XX.
 
 General steps to connect to the Raspi: 
 
+0. Establish VPN connection
+
+1. Use you default SSH client and use the public IP-address; Type ```ssh pi@XX.XX.XX.XX```
 
 
-## 1. Control Motors remotely 
+VPN + SSH + HTTPS
+Setup VPN-connection (openvpn client) + login via SSH
+Read & understand python script/call structure with MQTT via <GITLINK>
+
+### 1. Control Motors remotely 
+
+As visualized in Fig 1., the general communcation works as follows:
+
+**MQTT Broker:** The Raspberry Pi hosts a mosquitto MQTT Broker which acts as a relay server 
+
+**ESP32 Microcontroller:** We connected several *Espressife ESP32 microcontrollers* to the Wifi network each bridges external electronic components such as LED matrices to the IoT. An example script can be found in our [Software Github Repo](https://github.com/bionanoimaging/UC2-Software-GIT/tree/master/HARDWARE_CONTROL/ESP32) and an ESP example code [here](https://github.com/bionanoimaging/UC2-Software-GIT/blob/master/HARDWARE_CONTROL/ESP32/GENERAL/ESP32_ledarr/src/ESP32_ledarr/ESP32_ledarr.ino)
+
+**MQTT Client:** You can send MQTT commands to the ESP32s in order to turn on/off the light using the client *MQTT.fx* mentioned above. In order to do so
+
+**PiCamera:** The raspberry Pi features a camera connected to the microscope which can be controlled either through the command line interface using the commands ```raspistill``` or a more sophisticated way is the python library ```picamera```. Entering ```raspistill -f -t 1000``` produces a 1s long stream but is not visible through the ssh connection. Anyway, you can save the image by typing ```raspistill -f test.jpg -t 1000``` in the folder you're current in
+
+
+#### TASKs
+
+With the help of the prepared MQTT scripts do the following 
+
+- Turn on/off light 
+- Move the motor left/right
+- take an image through the command line interface and transfer it to your local machine through SSH 
+
+
 - motors, LED
 
 ## 2. Create simple web-based GUI 
+
+This task should help you to create a Vue.JS-based plugin, which offers a button to set the LED on and off again. 
+
 - Button for LED on/off
+- Start/Stop Video STreaming and display it (at lowest quality possible), have a look [here](https://appuals.com/how-to-perform-video-streaming-using-raspberry-pi/)
+- Test MJPEG and HTTPS vs h264 with webRTCTest, more information [here](https://medium.com/home-wireless/headless-streaming-video-with-the-raspberry-pi-zero-w-and-raspberry-pi-camera-38bef1968e1)
+- Create a homepage and run on RASPI -> VUE.js which calls a node.js interface and redirects commands
 
 ## 3. Create WebRTC camera  live- stream 
-- 
+
+- Implement camera-stream into homepage and buttons to interact with remote device
+- webRTC + STUN
+
+
 
 
 ## Final: Implement everything into ImJoy 
 
-https://gist.github.com/oeway/279c412350d53de07db8760141667b31
+- Start reading [imjoy.io-documentation](https://imjoy.io/docs/#/tutorials)
+- Setup webRTC on RasPi
 
 
+
+
+Example ImJoy Plugin which displays the WebRTC stream of the Raspberry Pi.
+
+You can access it inside the ImJoy Framework using this link:
+[https://gist.github.com/beniroquai/e1cb9e22d5b5974043154e6b18c83f86](https://gist.github.com/beniroquai/e1cb9e22d5b5974043154e6b18c83f86)
+
+#### -> Steps
+
+1. Go to [imjoy.io](https://imjoy.io)
+2. Hit "start imjoy"
+3. Click "+ Plugins" on the left handside
+4. Past above url ```https://gist.github.com/beniroquai/e1cb9e22d5b5974043154e6b18c83f86```into the "Install from URL" field
+5. Hit enter
+6. Hit the cloud "Install"
+7. On the left handside click the plugin UC2-Streamer - it will give an error... ```UC2-Streamer>Error: failed to import required scripts: https://horrible-fly-95.telebit.io/libs/request.min.js,https://horrible-fly-95.telebit.io/libs/adapter.min.js,https://horrible-fly-95.telebit.io/webrtcstreamer.js....``` since no stream is running..
+8. Fix it :) 
+
+#### Boilerplate:
 
 ```
 <docs lang="markdown">
