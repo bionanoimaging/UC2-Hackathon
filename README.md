@@ -208,7 +208,8 @@ This task should help you to create a Vue.JS-based plugin, which offers a button
 - Start reading [imjoy.io-documentation](https://imjoy.io/docs/#/tutorials)
 - Setup webRTC on RasPi
 
-
+<img src="./IMAGES/FIG2.png" width="650">
+</p>
 
 
 Example ImJoy Plugin which displays the WebRTC stream of the Raspberry Pi.
