@@ -195,11 +195,116 @@ This task should help you to create a Vue.JS-based plugin, which offers a button
 - Test MJPEG and HTTPS vs h264 with webRTCTest, more information [here](https://medium.com/home-wireless/headless-streaming-video-with-the-raspberry-pi-zero-w-and-raspberry-pi-camera-38bef1968e1)
 - Create a homepage and run on RASPI -> VUE.js which calls a node.js interface and redirects commands
 
-## 3. Create WebRTC camera  live- stream 
+## 3. Create WebRTC camera live-stream using Janus
 
-- Implement camera-stream into homepage and buttons to interact with remote device
-- webRTC + STUN
+*Wikipedia:*
+WebRTC Gateway connects between WebRTC and an established VoIP technology such as SIP. WebRTC (Web Real-Time Communication) is an API definition drafted by the World Wide Web Consortium (W3C) that supports browser-to-browser applications for voice calling, video chat, and messaging without the need of either internal or external plugins.
 
+It relies on a WebRTC connection which basically looks like this:
+
+<p align="center">
+<img src="https://lh3.googleusercontent.com/proxy/HMYfOM8XmTfWxn7-YLP_FoDh2EtrrFobuTsqDgKYPQ7g2TuI7RiU2d4dJVwMJsMK9BS3gT28tWdgFhqukzoCD-qMtg2Pimh48BIhxKf7yNm4wUj38zcrvl9cuevn4W26rfAwZbfT3z2gYZ_UgYYj3qB2OQ" width="500">
+</p>
+
+The STUN/TURN server in between exchanges public IP addresses between the sender/receiver to directly stream larger data packages from host to host.
+
+We want to use this framework to exploit the camera stream to the outside world (your screen at home). 
+
+Some references for the WebRTC protocol
+
+- [https://www.linux-projects.org/uv4l/installation/](https://www.linux-projects.org/uv4l/installation/)
+- [https://www.linux-projects.org/uv4l/tutorials/custom-webapp-with-face-detection/](https://www.linux-projects.org/uv4l/tutorials/custom-webapp-with-face-detection/)
+- Get a free DynDNS [https://telebit.cloud/](https://telebit.cloud/)
+
+
+#### Quick Guide to Install JANUS GATWAY:
+
+The tutorial is derived from this [guide](https://planb.nicecupoftea.org/2015/10/17/hackspace-hat-quick-install-or-audio-and-video-streaming-from-a-raspberry-pi-to-a-remote-or-local-webrtc-compatible-browser/)
+
+**Prepare the PI**
+```
+sudo apt-get update -y && sudo apt-get upgrade -y sudo apt-get install -y libgstreamer0.10-0-dbg libgstreamer0.10-0  libgstreamer0.10-dev 
+sudo apt-get install aptitude
+sudo aptitude install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf nginx
+
+sudo apt-get install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf  libconfig-dev libsrtp2-dev
+```
+
+**Install JANUS GATEWAY**
+```
+cd ~/Downloads
+git clone https://github.com/meetecho/janus-gateway.git
+cd janus-gateway
+sh autogen.sh
+```
+
+**Configure Janus Build settings**
+```
+#./configure --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs --prefix=/opt/janus
+#./configure --prefix=/opt/janus --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs
+./configure --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs --prefix=/opt/janus --disable-aes-gcm # some modification to make it work..
+```
+
+**Build and install Janus**
+```
+make
+sudo make install
+sudo make configs
+```
+
+**Configure Janus Streaming settings**
+open the file
+```
+sudo nano /opt/janus/etc/janus/janus.plugin.streaming.cfg
+```
+
+and add this to the bottom (probably some adjustmens need to be done.. 
+```
+[gst-rpwc] type = rtp id = 1 description = RPWC H264 test streaming audio = yes audioport = 8005 audiopt = 10 audiortpmap = opus/48000/2 video = yes videoport = 8004 videopt = 96 videortpmap = H264/90000 videofmtp = profile-level-id=42e028\;packetization-mode=1
+```
+
+Depending on the config type this (i.e. jcfg vs cfg) you need to use this:
+
+```
+sudo nano /opt/janus/etc/janus/janus.plugin.streaming.jcfg
+```
+
+then add:
+
+```
+gst-rpwc: {
+        type = "rtp"
+        id = 1
+        description = "RPWC H264 test streaming"
+        metadata = "You can use this metadata section to put any info you want!"
+        audio = false
+        video = true
+        audioport = 8005
+        audiopt = 10
+        audiortpmap = "opus/48000/2"
+        videoport = 8004
+        videopt = 96
+        videortpmap = „H264/90000"
+	  videofmtp = profile-level-id=42e028\;packetization-mode=1
+}
+```
+
+**Add the janus webpage to your Webserver to make it publicly available**
+
+```
+sudo cp -r /opt/janus/share/janus/demos/ /var/www/html
+```
+
+Open an additional Terminal console and start the stream of the raspicamera
+```
+raspivid --verbose --nopreview -hf -vf --width 640 --height 480 --framerate 15 --bitrate 1000000 --profile baseline --timeout 0 -o - | gst-launch-1.0 -v fdsrc ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=8004
+```
+
+or 
+
+```
+raspivid --verbose --nopreview -hf -vf --width 640 --height 480 --framerate 15 --bitrate 1000000 --profile baseline --timeout 0 -o - | gst-launch-0.10 -v fdsrc ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=8004 alsasrc device=plughw:Set ! audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=127.0.0.1 port=8005
+```
 
 
 
