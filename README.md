@@ -108,15 +108,8 @@ We have created a Zoom webstream of the setup. The Link is  accessible through t
 
 ***🔐 User credentials:***
  
-```
-*Raspberry Pi*
-user: pi
-password: raspberry
+Will be provided via discord. 
 
-*VPN*
-user: XXX
-password: XXX
-```
 
 ***Helpful Links***
 
@@ -155,7 +148,7 @@ General steps to connect to the Raspi:
 
 0. Establish VPN connection
 
-1. Use you default SSH client and use the public IP-address; Type ```ssh pi@XX.XX.XX.XX```
+1. Use you default SSH client and use the public IP-address; Type ```ssh <USERNAME>@XX.XX.XX.XX```
 
 
 VPN + SSH + HTTPS
