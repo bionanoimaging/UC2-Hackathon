@@ -215,23 +215,26 @@ Some references for the WebRTC protocol
 The tutorial is derived from this [guide](https://planb.nicecupoftea.org/2015/10/17/hackspace-hat-quick-install-or-audio-and-video-streaming-from-a-raspberry-pi-to-a-remote-or-local-webrtc-compatible-browser/)
 
 **Prepare the PI**
-```
-sudo apt-get update -y && sudo apt-get upgrade -y sudo apt-get install -y libgstreamer0.10-0-dbg libgstreamer0.10-0  libgstreamer0.10-dev 
-sudo apt-get install aptitude
-sudo aptitude install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf nginx
 
-sudo apt-get install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf  libconfig-dev libsrtp2-dev
+```
+sudo apt-get update -y && sudo apt-get upgrade -y sudo apt-get install -y libgstreamer0.10-0-dbg libgstreamer0.10-0  libgstreamer0.10-dev   
+#sudo apt-get install aptitude -y
+#sudo apt-get install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf nginx -y
+sudo apt-get install libmicrohttpd-dev libjansson-dev libnice-dev libssl-dev libsrtp-dev libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev libini-config-dev libcollection-dev pkg-config gengetopt libtool automake dh-autoreconf nginx libconfig-dev libsrtp2-dev git -y
+sudo service nginx start
 ```
 
 **Install JANUS GATEWAY**
+
 ```
 cd ~/Downloads
-git clone https://github.com/meetecho/janus-gateway.git
+git clone https://github.com/meetecho/janus-gateway
 cd janus-gateway
 sh autogen.sh
 ```
 
 **Configure Janus Build settings**
+
 ```
 #./configure --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs --prefix=/opt/janus
 #./configure --prefix=/opt/janus --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs
@@ -239,6 +242,7 @@ sh autogen.sh
 ```
 
 **Build and install Janus**
+
 ```
 make
 sudo make install
@@ -246,6 +250,7 @@ sudo make configs
 ```
 
 **Configure Janus Streaming settings**
+
 open the file
 ```
 sudo nano /opt/janus/etc/janus/janus.plugin.streaming.cfg
@@ -282,11 +287,19 @@ gst-rpwc: {
 }
 ```
 
+
 **Add the janus webpage to your Webserver to make it publicly available**
 
 ```
 sudo cp -r /opt/janus/share/janus/demos/ /var/www/html
 ```
+
+**Start the Janus Server**
+
+```./janus -F /opt/janus/etc/janus/```
+
+JANUS is now available here ```http://localhost/demos/```
+
 
 Open an additional Terminal console and start the stream of the raspicamera
 ```
@@ -298,6 +311,50 @@ or
 ```
 raspivid --verbose --nopreview -hf -vf --width 640 --height 480 --framerate 15 --bitrate 1000000 --profile baseline --timeout 0 -o - | gst-launch-0.10 -v fdsrc ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=8004 alsasrc device=plughw:Set ! audioconvert ! audioresample ! opusenc ! rtpopuspay ! udpsink host=127.0.0.1 port=8005
 ```
+
+
+## Create a WebRTC Datachannel
+
+On a different machine install aioRTC using:
+
+
+```
+pip3 install aiortc
+pip3 install aiohttp
+```
+
+for the pi:
+
+```
+wget http://www.ffmpeg.org/releases/ffmpeg-4.2.2.tar.xz
+tar xf ffmpeg-4.2.2.tar.xz
+cd ffm*2
+./configure --enable-shared --enable-pic
+make -j4
+sudo make install
+
+curl -O https://bootstrap.pypa.io/get-pip.py
+sudo python3 get-pip.py
+pip3 install aiortc
+pip3 install aiohttp
+```
+
+
+Download the janus sample file from [here](https://github.com/aiortc/aiortc/tree/main/examples/janus)
+
+Execute the file using python as:
+```
+python janus.py --room 1234 http://192.168.43.189:8088/janus
+```
+
+
+### Test Janus with Python connection 
+
+Have a look [here](https://github.com/meetecho/janus-gateway/tree/master/test#echopy) 
+
+```
+python3 echo.py http://192.168.43.189:8088/janus --play-from cellSTORM_Trailer.mp4  --verbose
+``
 
 
 
