@@ -19,7 +19,7 @@ conn = RTCConnection(rtcConfiguration=RTCConfiguration([
 
 
 # set parameters
-setup_name          = "S001"
+setup_name          = "S015"
 device_ID           = "RAS01"
 device_MQTT_name    = "RASPI_" + str(randint(0, 100000))
 mqtt_broker_ip      = "localhost"
@@ -169,7 +169,7 @@ uc2.devices['LED'].send("CLEAR")
 def onMessage(msg):  # Called when messages received from browser
     print("Button clicked:", msg.get("type"))
     conn.put_nowait({"response": "received: " + msg.get("type")})
-    uc2.devices['LED'].send(msg.get("type"))
+    uc2.devices['LED'].send("NA+"+msg)
 
 async def connect():
     channel = sys.argv[1] if len(sys.argv)>1 else "default"

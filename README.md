@@ -161,6 +161,17 @@ As visualized in Fig 1., the general communcation works as follows:
 
 **MQTT Broker:** The Raspberry Pi hosts a mosquitto MQTT Broker which acts as a relay server 
 
+```
+sudo apt-get update
+sudo apt-get install mosquitto
+sudo apt-get install mosquitto-clients
+```
+
+Subscribe to all topics:
+```
+mosquitto_sub -h http://myhost:1883 -t \#
+```
+
 **ESP32 Microcontroller:** We connected several *Espressife ESP32 microcontrollers* to the Wifi network each bridges external electronic components such as LED matrices to the IoT. An example script can be found in our [Software Github Repo](https://github.com/bionanoimaging/UC2-Software-GIT/tree/master/HARDWARE_CONTROL/ESP32) and an ESP example code [here](https://github.com/bionanoimaging/UC2-Software-GIT/blob/master/HARDWARE_CONTROL/ESP32/GENERAL/ESP32_ledarr/src/ESP32_ledarr/ESP32_ledarr.ino)
 
 **MQTT Client:** You can send MQTT commands to the ESP32s in order to turn on/off the light using the client *MQTT.fx* mentioned above. In order to do so
@@ -354,7 +365,7 @@ Have a look [here](https://github.com/meetecho/janus-gateway/tree/master/test#ec
 
 ```
 python3 echo.py http://192.168.43.189:8088/janus --play-from cellSTORM_Trailer.mp4  --verbose
-``
+```
 
 
 
